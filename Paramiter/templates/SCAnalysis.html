@@ -50,6 +50,7 @@
   window.lineStartNode = null;       // สำหรับ manual mode “Line”
   window.devicePendingPreviewLine = null; // Preview line สำหรับการแสดง preview ของ device
   window.manualLinePreview = null;   // Preview line สำหรับเชื่อม node แบบ manual
+  window.loadedSVG = {};
 
   const gridSize = 50, connectionThreshold = 0;
   
@@ -235,7 +236,25 @@
       svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
       svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
-
+      
+      if (window.loadedSVG[svgUrl]) {
+    const preview = fabric.util.object.clone(window.loadedSVG[svgUrl]);
+    preview.set({
+      left: pointer.x,
+      top: pointer.y,
+      opacity: 0.5,
+      selectable: false,
+      evented: false,
+      originX: 'center',
+      originY: 'center'
+    });
+    window.previewObject = preview;
+    canvas.add(preview);
+    canvas.renderAll();
+    updateZOrder();
+    return;
+  }
+  
     fabric.loadSVGFromURL(svgUrl, function(objects, options) 
     {  if (!objects || objects.length === 0) {
       alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
