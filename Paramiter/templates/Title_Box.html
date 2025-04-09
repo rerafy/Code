@@ -1,0 +1,295 @@
+{% block content %}
+<style>
+  .custom-col-20 {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+  .custom-col-25 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+   /* ลด padding และ margin ของ input ที่มี class form-control */
+   input.form-control {
+    padding: 0.5rem 0.3rem; /* ลด padding */
+    margin-bottom: 5px;    /* ลด margin ด้านล่าง */
+    font-size: 0.5rem;     /* ลดขนาดฟอนต์ถ้าต้องการ */
+  }
+</style>
+<div id="floatingPanel" style="
+position: absolute;
+top: 50px;
+left: 50px;
+width: 600px;
+background: #fff;
+border: 1px solid #ccc;
+font-size: 8px;
+padding: 8px;
+display: none;
+z-index: 9999;">
+
+<!-- Panel Header -->
+<div id="panelHeader" style="background: #ddd; cursor: move; padding: 5px;">
+  <span style="font-size: 16px;">Parameter Input</span>
+  <button onclick="hideFloatingPanel()" style="float: right;">X</button>
+</div>
+
+<!-- ฟิลด์สำหรับตั้งชื่อชุดข้อมูล -->
+<div id="parameterSetNameContainer" style="margin-bottom:10px; display:none;">
+  <label for="parameterSetName">ตั้งชื่อชุดข้อมูล:</label>
+  <input type="text" id="parameterSetName" class="form-control">
+</div>
+
+<!-- Dropdown สำหรับชุดข้อมูลที่บันทึกไว้ -->
+<div id="savedParametersContainer" style="margin-bottom:10px; display:none;">
+  <label for="savedParameterSets">เลือกชุดข้อมูลที่บันทึกไว้:</label>
+  <select id="savedParameterSets" class="form-control"></select>
+</div>
+<div><h2 style="font-size: 16px;">Short-Circuit curernt & Impedance ratio</h2></div>
+<!-- ส่วนสำหรับ External Grid Parameters -->
+<div id="externalGridFields" style="display:none;">
+  <div class="row">
+  <div class="form-group">
+    <label for="shortCircuitCurrentMax">Short-Circuit Current Max. (kA):</label>
+    <input type="number" id="shortCircuitCurrentMax" step="any" class="form-control" required>
+  </div>
+</div>
+</div>
+  <div class="row">
+  <div class="col custom-col-25">  
+  <div class="form-group">
+    <label for="rxRatio">R/X Ratio:</label>
+    <input type="number" id="rxRatio" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-25">
+  <div class="form-group">
+    <label for="z2z1Ratio">Z2/Z1 Ratio:</label>
+    <input type="number" id="z2z1Ratio" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-25">
+  <div class="form-group">
+    <label for="x0x1Ratio">X0/X1 Ratio:</label>
+    <input type="number" id="x0x1Ratio" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-25">
+  <div class="form-group">
+    <label for="r0x0Ratio">R0/X0 Ratio:</label>
+    <input type="number" id="r0x0Ratio" step="any" class="form-control" required>
+  </div> 
+</div>
+</div>
+<div><h2<h2 style="font-size: 16px;"> Setting Relay </h2></div>
+  <div class="row">
+  <div class="col-md-4">
+  <div class="form-group">
+    <label for="ctRatio">CT Ratio:</label>
+    <input type="number" id="ctRatio" step="any" class="form-control" required>
+  </div>
+</div>
+</div>
+  <div class="row">
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="i51">I> (51) :</label>
+    <input type="number" id="i51" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="phaseCharacteristic">Curve :</label>
+    <input type="number" id="phaseCharacteristic" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="timeDial51">TMS :</label>
+    <input type="number" id="timeDial51" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="i50">I>> (50) :</label>
+    <input type="number" id="i50" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="timeDial50">Time Delay :</label>
+    <input type="number" id="timeDial50" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="row">
+  <div class="col custom-col-20">
+  <div class="form-group">
+  <label for="in51N">IN> (51N) :</label>
+  <input type="number" id="in51N" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="groundCharacteristic">Curve :</label>
+    <input type="number" id="groundCharacteristic" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="timeDial51N">TMS :</label>
+    <input type="number" id="timeDial51N" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="in50N">IN>> (50N):</label>
+    <input type="number" id="in50N" step="any" class="form-control" required>
+  </div>
+</div>
+  <div class="col custom-col-20">
+  <div class="form-group">
+    <label for="timeDial50N">Time Dela:</label>
+    <input type="number" id="timeDial50N" step="any" class="form-control" required>
+  </div>
+</div>
+</div>
+
+<!-- Panel Content -->
+<div id="panelContent" style="padding: 5px;">
+  <!-- ปุ่มสำหรับบันทึกชุดพารามิเตอร์ -->
+  <button id="runFaultBtn" onclick="runShortCircuit()">บันทึกชุดข้อมูล</button>
+</div>
+
+</div>
+
+<script>
+// Global object สำหรับเก็บชุดพารามิเตอร์ External Grid
+window.savedExternalGridParameters = window.savedExternalGridParameters || [];
+
+/* ฟังก์ชันแสดงและซ่อน Floating Panel */
+function showFloatingPanel() {
+document.getElementById('floatingPanel').style.display = 'block';
+}
+function hideFloatingPanel() {
+document.getElementById('floatingPanel').style.display = 'none';
+}
+
+/* ฟังก์ชันเปิด Title Box (Floating Panel) */
+function openTitleBox(deviceType) {
+document.getElementById("panelHeader").querySelector("span").innerText = "Parameter Input: " + deviceType;
+// ถ้าเลือก ExternalGrid ให้แสดงฟิลด์ External Grid, ฟิลด์สำหรับตั้งชื่อชุดข้อมูล, และ dropdown ชุดข้อมูลที่บันทึกไว้
+if (deviceType === 'ExternalGrid') {
+  document.getElementById('externalGridFields').style.display = 'block';
+  document.getElementById('parameterSetNameContainer').style.display = 'block';
+  document.getElementById('savedParametersContainer').style.display = 'block';
+  updateSavedParametersDropdown();
+} else {
+  document.getElementById('externalGridFields').style.display = 'none';
+  document.getElementById('parameterSetNameContainer').style.display = 'none';
+  document.getElementById('savedParametersContainer').style.display = 'none';
+}
+showFloatingPanel();
+}
+
+/* ฟังก์ชันอัปเดต dropdown ให้แสดงชุดข้อมูลที่บันทึกไว้ */
+function updateSavedParametersDropdown() {
+var dropdown = document.getElementById('savedParameterSets');
+dropdown.innerHTML = ''; // เคลียร์ option เดิม
+window.savedExternalGridParameters.forEach(function(item, index) {
+  var option = document.createElement('option');
+  option.value = index;
+  option.text = item.name;
+  dropdown.appendChild(option);
+});
+// เมื่อมีการเปลี่ยนแปลงการเลือก ให้เติมข้อมูลในฟิลด์
+dropdown.onchange = function() {
+  var idx = dropdown.value;
+  if (window.savedExternalGridParameters[idx]) {
+    populateExternalGridFields(window.savedExternalGridParameters[idx].parameters);
+  }
+}
+}
+
+/* ฟังก์ชันเติมข้อมูลพารามิเตอร์ External Grid ลงในฟิลด์ */
+function populateExternalGridFields(params) {
+document.getElementById('shortCircuitCurrentMax').value = params.shortCircuitCurrentMax || '';
+document.getElementById('rxRatio').value = params.rxRatio || '';
+document.getElementById('z2z1Ratio').value = params.z2z1Ratio || '';
+document.getElementById('x0x1Ratio').value = params.x0x1Ratio || '';
+document.getElementById('r0x0Ratio').value = params.r0x0Ratio || '';
+document.getElementById('ctRatio').value = params.ctRatio || '';
+document.getElementById('i51').value = params.i51 || '';
+document.getElementById('phaseCharacteristic').value = params.phaseCharacteristic || '';
+document.getElementById('timeDial51').value = params.timeDial51 || '';
+document.getElementById('i50').value = params.i50 || '';
+document.getElementById('timeDial50').value = params.timeDial50 || '';
+document.getElementById('in51N').value = params.i51N || '';
+document.getElementById('groundCharacteristic').value = params.groundCharacteristic || '';
+document.getElementById('timeDial51N').value = params.timeDial51N || '';
+document.getElementById('in50N').value = params.i50N || '';
+document.getElementById('timeDial50N').value = params.timeDial50N || '';
+}
+
+/* ฟังก์ชันสำหรับบันทึกชุดพารามิเตอร์ External Grid */
+function runShortCircuit() {
+var parameters = {};
+if (document.getElementById('externalGridFields').style.display === 'block') {
+  parameters.shortCircuitCurrentMax = parseFloat(document.getElementById('shortCircuitCurrentMax').value);
+  parameters.rxRatio = parseFloat(document.getElementById('rxRatio').value);
+  parameters.z2z1Ratio = parseFloat(document.getElementById('z2z1Ratio').value);
+  parameters.x0x1Ratio = parseFloat(document.getElementById('x0x1Ratio').value);
+  parameters.r0x0Ratio = parseFloat(document.getElementById('r0x0Ratio').value);
+  parameters.ctRatio = parseFloat(document.getElementById('ctRatio').value);
+  parameters.i51 = parseFloat(document.getElementById('i51').value);
+  parameters.phaseCharacteristic = parseFloat(document.getElementById('phaseCharacteristic').value);
+  parameters.timeDial51 = parseFloat(document.getElementById('timeDial51').value);
+  parameters.i50 = parseFloat(document.getElementById('i50').value);
+  parameters.timeDial50 = parseFloat(document.getElementById('timeDial50').value);
+  parameters.i51N = parseFloat(document.getElementById('in51N').value);
+  parameters.groundCharacteristic = parseFloat(document.getElementById('groundCharacteristic').value);
+  parameters.timeDial51N = parseFloat(document.getElementById('timeDial51N').value);
+  parameters.i50N = parseFloat(document.getElementById('in50N').value);
+  parameters.timeDial50N = parseFloat(document.getElementById('timeDial50N').value);
+}
+
+// อ่านชื่อชุดพารามิเตอร์ที่ผู้ใช้กรอก
+var parameterSetName = document.getElementById('parameterSetName').value || 'Unnamed Set';
+
+// บันทึกชุดข้อมูลใน global object
+window.savedExternalGridParameters.push({
+  name: parameterSetName,
+  parameters: parameters
+});
+
+alert('ชุดข้อมูลถูกบันทึกแล้ว: ' + JSON.stringify(parameters));
+updateSavedParametersDropdown();
+hideFloatingPanel();
+}
+
+// ทำให้ Floating Panel ลากได้
+(function() {
+var panel = document.getElementById("floatingPanel");
+var header = document.getElementById("panelHeader");
+var offsetX = 0, offsetY = 0;
+var isDragging = false;
+
+header.addEventListener("mousedown", function(e) {
+  isDragging = true;
+  offsetX = e.clientX - panel.offsetLeft;
+  offsetY = e.clientY - panel.offsetTop;
+  e.preventDefault();
+});
+
+document.addEventListener("mousemove", function(e) {
+  if (isDragging) {
+    panel.style.left = (e.clientX - offsetX) + "px";
+    panel.style.top = (e.clientY - offsetY) + "px";
+  }
+});
+
+document.addEventListener("mouseup", function(e) {
+  isDragging = false;
+});
+})();
+</script>
+
+{% endblock %}
