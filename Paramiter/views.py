@@ -19,9 +19,9 @@ def diagram_view(request):
     equipments = Equipment.objects.all()
     context = {
          'equipments': equipments,
-         'ExternalGrid_url': static('svg/External_grid.svg'),
-         'Recloser_url': static('svg/Recloser.svg'),
-         'Fuse_url': static('svg/Fuse.svg'),
+         'ExternalGrid_url': static('svg/External_grid/External_grid.svg'),
+         'Recloser_url': static('svg/Recloser/Recloser.svg'),
+         'Fuse_url': static('svg/Fuse/Fuse.svg'),
          'Line_url': static('svg/Line.svg'),
          
     }
