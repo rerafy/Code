@@ -235,15 +235,20 @@
       svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
       svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
+
     fabric.loadSVGFromURL(svgUrl, function(objects, options) 
-    { // **เพิ่มโค้ดนี้เพื่อแก้ไขปัญหา "alphabetical"**
+    {  if (!objects || objects.length === 0) {
+      alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
+      console.error("SVG โหลดไม่สำเร็จ:", svgUrl);
+      return;
+  }             
+      // **เพิ่มโค้ดนี้เพื่อแก้ไขปัญหา "alphabetical"**
     objects.forEach(function(obj) {
     if(obj.type === 'text' && obj.textBaseline === 'alphabetical') {
     obj.set('textBaseline', 'alphabetic');
   }
 });
-      if (!objects || objects.length === 0) return;
-      let preview = new fabric.Group(objects, options);
+       let preview = new fabric.Group(objects, options);
       preview.scaleToWidth(75);
       preview.set({
         left: pointer.x,
@@ -872,15 +877,18 @@
       else if (type === 'Fuse') svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
       fabric.loadSVGFromURL(svgUrl, function(objects, options) {
         // **เพิ่มโค้ดนี้เพื่อแก้ไขปัญหา "alphabetical"**
-         objects.forEach(function(obj) {
+        // ต้องเช็ค objects ก่อนเสมอ!
+       if (!objects || objects.length === 0) {
+      alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
+      console.error("SVG โหลดไม่สำเร็จ:", svgUrl);
+      return;
+  }                 
+        
+        objects.forEach(function(obj) {
          if(obj.type === 'text' && obj.textBaseline === 'alphabetical') {
          obj.set('textBaseline', 'alphabetic');
   }
-});
-        if (!objects || objects.length === 0) {
-          alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
-          return;
-        }
+});        
         const device = new fabric.Group(objects, options);
         device.scaleToWidth(75);
         device.set({
