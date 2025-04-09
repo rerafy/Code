@@ -123,3 +123,6 @@ LOGGING = {
          'level': 'DEBUG' if DEBUG else 'INFO',
     },
 }
+
+# STATIC_ROOT คือ path ที่ collectstatic จะนำไฟล์ static มารวมกัน
+STATIC_ROOT = BASE_DIR / "staticfiles"
