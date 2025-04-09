@@ -230,7 +230,7 @@
   } else {
     let svgUrl = "";
     if (window.selectedDeviceType === 'ExternalGrid')
-      svgUrl = "{% static 'svg/external/External_grid.svg' %}";
+      svgUrl = "{% static 'svg/external/Externalgrid.svg' %}";
     else if (window.selectedDeviceType === 'Recloser')
       svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
@@ -861,7 +861,7 @@
         return;
       }
       let svgUrl = "";
-      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/external/External_grid.svg' %}";
+      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/external/Externalgrid.svg' %}";
       else if (type === 'Recloser') svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
       else if (type === 'Fuse') svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
       fabric.loadSVGFromURL(svgUrl, function(objects, options) {
