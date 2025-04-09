@@ -235,7 +235,13 @@
       svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
       svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
-    fabric.loadSVGFromURL(svgUrl, function(objects, options) {
+    fabric.loadSVGFromURL(svgUrl, function(objects, options) 
+    { // **เพิ่มโค้ดนี้เพื่อแก้ไขปัญหา "alphabetical"**
+    objects.forEach(function(obj) {
+    if(obj.type === 'text' && obj.textBaseline === 'alphabetical') {
+    obj.set('textBaseline', 'alphabetic');
+  }
+});
       if (!objects || objects.length === 0) return;
       let preview = new fabric.Group(objects, options);
       preview.scaleToWidth(75);
@@ -865,6 +871,12 @@
       else if (type === 'Recloser') svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
       else if (type === 'Fuse') svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
       fabric.loadSVGFromURL(svgUrl, function(objects, options) {
+        // **เพิ่มโค้ดนี้เพื่อแก้ไขปัญหา "alphabetical"**
+         objects.forEach(function(obj) {
+         if(obj.type === 'text' && obj.textBaseline === 'alphabetical') {
+         obj.set('textBaseline', 'alphabetic');
+  }
+});
         if (!objects || objects.length === 0) {
           alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
           return;

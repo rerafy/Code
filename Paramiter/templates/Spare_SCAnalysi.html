@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "Base.html" %}
 {% load static %}
 {% block title %}
   <title>Short Circuit Analysis</title>
@@ -20,7 +20,7 @@
   <div id="sidebar">
     <h4>เมนูอุปกรณ์</h4>
     <!-- เมื่อคลิกแต่ละเมนูจะเรียก selectDevice() -->
-    <div class="menu-item" onclick="selectDevice('ExternalGrid')">External grid</div>
+    <div class="menu-item" onclick="selectDevice('ExternalGrid')">External Grid</div>
     <div class="menu-item" onclick="selectDevice('Recloser')">Recloser</div>
     <div class="menu-item" onclick="selectDevice('Fuse')">Fuse</div>
     <div class="menu-item" onclick="selectDevice('Line')">Line</div>
@@ -33,7 +33,7 @@
   </div>
 </div>
 
-{% include "title_box.html" %}
+{% include "Title_Box.html" %}
 
 <script>
 
@@ -230,11 +230,11 @@
   } else {
     let svgUrl = "";
     if (window.selectedDeviceType === 'ExternalGrid')
-      svgUrl = "{% static 'svg/External_grid.svg' %}";
+      svgUrl = "{% static 'svg/external/Externalgrid.svg' %}";
     else if (window.selectedDeviceType === 'Recloser')
-      svgUrl = "{% static 'svg/Recloser.svg' %}";
+      svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
-      svgUrl = "{% static 'svg/Fuse.svg' %}";
+      svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
     fabric.loadSVGFromURL(svgUrl, function(objects, options) {
       if (!objects || objects.length === 0) return;
       let preview = new fabric.Group(objects, options);
@@ -861,9 +861,9 @@
         return;
       }
       let svgUrl = "";
-      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/External_grid.svg' %}";
-      else if (type === 'Recloser') svgUrl = "{% static 'svg/Recloser.svg' %}";
-      else if (type === 'Fuse') svgUrl = "{% static 'svg/Fuse.svg' %}";
+      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/external/Externalgrid.svg' %}";
+      else if (type === 'Recloser') svgUrl = "{% static 'svg/reclosermain/Recloser.svg' %}";
+      else if (type === 'Fuse') svgUrl = "{% static 'svg/fuseline/Fuse.svg' %}";
       fabric.loadSVGFromURL(svgUrl, function(objects, options) {
         if (!objects || objects.length === 0) {
           alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);

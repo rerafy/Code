@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- เลือกใช้ Bootstrap 5 อย่างเดียว -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  {% block title %}
+  {% endblock %}
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">ผปค.กสฟ.ฝปบ.น3</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/SCAnalysis/">Short Circuit Analysis</a>
+          </li>
+        </ul>
+        <form class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+  <hr>
+  <div>
+    {% block content %}
+    {% endblock %}
+  </div>    
+
+  <!-- Floating Panel ควรอยู่ภายใน <body> -->
+  <div id="floatingPanel" style="position: absolute; top: 50px; left: 50px; width: 300px; height: 200px; background: #fff; border: 1px solid #ccc; padding: 10px; display: none; z-index: 9999;">
+    <div id="panelHeader" style="background: #ddd; cursor: move; padding: 5px;">
+      <span>Parameter Input</span>
+      <button onclick="hideFloatingPanel()">X</button>
+    </div>
+    <div id="panelContent" style="padding: 5px;">
+      <label>Parameter 1:</label>
+      <input type="text" id="param1" />
+      <br>
+      <label>Parameter 2:</label>
+      <input type="text" id="param2" />
+      <br>
+      <button onclick="runShortCircuit()">Run Fault Analysis</button>
+    </div>
+  </div>
+
+  <!-- โหลดสคริปต์ที่จำเป็น (แนะนำโหลดที่ส่วนท้ายของ <body>) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
+          integrity="sha384-cVKIPhGgvY/..." crossorigin="anonymous"></script>
+  <!-- สคริปต์สำหรับ Floating Panel -->
+  <script>
+    // ฟังก์ชันแสดง Floating Panel
+    function showFloatingPanel() {
+      document.getElementById('floatingPanel').style.display = 'block';
+    }
+
+    // ฟังก์ชันซ่อน Floating Panel
+    function hideFloatingPanel() {
+      document.getElementById('floatingPanel').style.display = 'none';
+    }
+
+    // ทำให้ Panel ลากได้
+    (function() {
+      var panel = document.getElementById("floatingPanel");
+      var header = document.getElementById("panelHeader");
+      var offsetX = 0, offsetY = 0;
+      var isDragging = false;
+      
+      header.addEventListener("mousedown", function(e) {
+        isDragging = true;
+        offsetX = e.clientX - panel.offsetLeft;
+        offsetY = e.clientY - panel.offsetTop;
+        e.preventDefault();
+      });
+      
+      document.addEventListener("mousemove", function(e) {
+        if (isDragging) {
+          panel.style.left = (e.clientX - offsetX) + "px";
+          panel.style.top = (e.clientY - offsetY) + "px";
+        }
+      });
+      
+      document.addEventListener("mouseup", function(e) {
+        isDragging = false;
+      });
+    })();
+  </script>
+</body>
+</html>
