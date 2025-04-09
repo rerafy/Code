@@ -27,8 +27,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # กำหนด ALLOWED_HOSTS จาก environment variable หรือค่าเริ่มต้น
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,code-uued.onrender.com').split(',')
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
