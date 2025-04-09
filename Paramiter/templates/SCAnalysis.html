@@ -230,11 +230,11 @@
   } else {
     let svgUrl = "";
     if (window.selectedDeviceType === 'ExternalGrid')
-      svgUrl = "{% static 'svg/External_grid/External_grid.svg' %}";
+      svgUrl = "{% static 'svg/external/External_grid.svg' %}";
     else if (window.selectedDeviceType === 'Recloser')
-      svgUrl = "{% static 'svg/Recloser/Recloser.svg' %}";
+      svgUrl = "{% static 'svg/recloser/Recloser.svg' %}";
     else if (window.selectedDeviceType === 'Fuse')
-      svgUrl = "{% static 'svg/Fuse/Fuse.svg' %}";
+      svgUrl = "{% static 'svg/fuse/Fuse.svg' %}";
     fabric.loadSVGFromURL(svgUrl, function(objects, options) {
       if (!objects || objects.length === 0) return;
       let preview = new fabric.Group(objects, options);
@@ -861,9 +861,9 @@
         return;
       }
       let svgUrl = "";
-      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/External_grid/External_grid.svg' %}";
-      else if (type === 'Recloser') svgUrl = "{% static 'svg/Recloser/Recloser.svg' %}";
-      else if (type === 'Fuse') svgUrl = "{% static 'svg/Fuse/Fuse.svg' %}";
+      if (type === 'ExternalGrid') svgUrl = "{% static 'svg/external/External_grid.svg' %}";
+      else if (type === 'Recloser') svgUrl = "{% static 'svg/recloser/Recloser.svg' %}";
+      else if (type === 'Fuse') svgUrl = "{% static 'svg/fuse/Fuse.svg' %}";
       fabric.loadSVGFromURL(svgUrl, function(objects, options) {
         if (!objects || objects.length === 0) {
           alert("ไม่สามารถโหลดไฟล์ SVG: " + svgUrl);
