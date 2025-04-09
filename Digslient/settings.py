@@ -102,7 +102,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'Paramiter' / 'static'/ 'svg',    # ชี้ไปยังโฟลเดอร์ static หลัก
+    BASE_DIR / 'Paramiter' / 'static',    # ชี้ไปยังโฟลเดอร์ static หลัก
 ]
 
 # Default primary key field type
