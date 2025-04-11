@@ -152,16 +152,22 @@ function updateDeviceRotation(device) {
   console.log("Device rotated to angle:", angle);
 }
 
+// Update Z-Order: กำหนดลำดับการวาดโดยใช้ sort() กับ canvas._objects
 function updateZOrder() {
-  // เรียงลำดับวัตถุตามประเภท โดยให้องค์ประกอบที่เป็นเส้น (line) อยู่ด้านล่าง
-  canvas._objects.sort(function(a, b) {
-    if (a.type === 'line' && b.type !== 'line') {
-      return -1; // ให้ a มาอยู่ก่อน b (เส้นอยู่ด้านหลัง)
+  // กำหนด order ให้กับแต่ละประเภท (order ต่ำ = วาดก่อน = อยู่ด้านหลัง)
+  function getOrder(obj) {
+    if (obj.type === 'line') {
+      return 0; // เส้นอยู่ด้านล่างสุด
+    } else if (obj.type === 'circle') {
+      return 1; // Node อยู่กลาง
+    } else if (obj.type === 'group') {
+      return 2; // Device อยู่บนสุด
     }
-    if (a.type !== 'line' && b.type === 'line') {
-      return 1; // ให้ b มาอยู่ก่อน a
-    }
-    return 0;
+    return 1; // ค่าเริ่มต้น
+  }
+
+  canvas._objects = canvas._objects.sort(function(a, b) {
+    return getOrder(a) - getOrder(b);
   });
   canvas.renderAll();
 }
@@ -420,7 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (type === "Line") window.lineStartNode = null;
   };
 
-  // เปิด Title Box เมื่อ double-click (Title_Box.html มีฟังก์ชัน openTitleBox)
   canvas.on('mouse:dblclick', function(e) {
     if (e.target && (e.target.type === 'group' || e.target.type === 'text' || e.target.type === 'line')) {
       let deviceType = e.target.deviceType ||
@@ -430,7 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // จัดการ event mouse:move, mouse:down, mouse:up, contextmenu และ mouse wheel
   canvas.on('mouse:move', function(e) {
     const pointer = canvas.getPointer(e.e);
     if (window.selectedDeviceType) {
@@ -443,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
       canvas.lastPosX = e.e.clientX;
       canvas.lastPosY = e.e.clientY;
     }
-    // อัปเดต pending preview line
     if (window.pendingManualConnectionDevice && window.pendingManualConnectionDevice.connectionNodes.length < 2) {
       const center = window.pendingManualConnectionDevice.getCenterPoint();
       if (!window.devicePendingPreviewLine) {
@@ -479,7 +482,6 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("Double-click detected on deviceType:", deviceType);
       openTitleBox(deviceType);
     }
-    // Ctrl+Click เพื่อ flip หรือ pan
     if (e.e.button === 0 && e.e.ctrlKey && e.target) {
       if (e.target.type === 'group') {
         let obj = e.target;
@@ -498,7 +500,6 @@ document.addEventListener('DOMContentLoaded', function() {
       canvas.renderAll();
       return;
     }
-    // ถ้าไม่ใช่ Line ให้เพิ่มอุปกรณ์ใหม่
     if (e.e.button === 0 && window.selectedDeviceType && window.selectedDeviceType !== "Line" && !e.target) {
       const pointer = canvas.getPointer(e.e);
       addDevice(window.selectedDeviceType, pointer.x, pointer.y);
@@ -510,7 +511,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.selectedDeviceType = null;
       }
     }
-    // สำหรับ Line: เมื่อคลิกบน Node (circle)
     if (e.e.button === 0 && window.selectedDeviceType === "Line" && e.target && e.target.type === 'circle') {
       const node = e.target;
       if (!window.lineStartNode) {
@@ -587,8 +587,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.devicePendingPreviewLine = null;
       }
       canvas.discardActiveObject();
-
-      // อัปเดตตำแหน่งเส้นเชื่อมและ devices ให้ align ตาม grid
       canvas.getObjects().forEach(function(obj) {
         if (obj.type === 'line' && (obj.myStartNode || obj.myEndNode)) {
           let start = obj.myStartNode.getCenterPoint();
@@ -607,6 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
           obj.setCoords();
         }
       });
+      updateZOrder();
       canvas.renderAll();
     }
     if (canvas.isDragging && e.e.button === 1) {
@@ -668,15 +667,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const nodeCenter = node.getCenterPoint();
       if (device.connectionLines[index]) {
         device.connectionLines[index].set({
-          x1: deviceCenter.x ,
-          y1: deviceCenter.y ,
-          x2: nodeCenter.x ,
-          y2: nodeCenter.y ,
+          x1: deviceCenter.x,
+          y1: deviceCenter.y,
+          x2: nodeCenter.x,
+          y2: nodeCenter.y,
         });
-        device.connectionLines[index].bringToFront();
       }
     });
-    canvas.renderAll();
     updateZOrder();
   }
 
@@ -747,8 +744,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const idx = device.connectionNodes.indexOf(node);
         if (idx !== -1 && device.connectionLines[idx]) {
           device.connectionLines[idx].set({
-            x2: node.getCenterPoint().x ,
-            y2: node.getCenterPoint().y ,
+            x2: node.getCenterPoint().x,
+            y2: node.getCenterPoint().y,
           });
         }
       });
@@ -792,6 +789,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', resizeCanvas);
   canvas.calcOffset();
 
+  // checkForNewConnections: (สำหรับ Auto-connection, ไม่เกี่ยวกับ manual)
   function checkForNewConnections(device) {
     const deviceCenter = device.getCenterPoint();
     let autoConnected = false;
@@ -833,7 +831,6 @@ document.addEventListener('DOMContentLoaded', function() {
       window.pendingManualConnectionDevice = device;
       showManualPreviewLine(device);
     }
-    canvas.renderAll();
     updateZOrder();
     if (device.connectionNodes.length === 2) {
       updateDeviceRotation(device);
@@ -878,7 +875,6 @@ document.addEventListener('DOMContentLoaded', function() {
             line.myDevice = device;
             line.myNode = node;
             canvas.add(line);
-            updateZOrder();
             line.on('modified', function() {
               let newDeviceCenter = line.myDevice.getCenterPoint();
               let newNodeCenter = line.myNode.getCenterPoint();
@@ -891,8 +887,6 @@ document.addEventListener('DOMContentLoaded', function() {
               canvas.renderAll();
             });
             device.connectionLines.push(line);
-            canvas.add(line);
-            canvas.sendToBack(line);
             updateZOrder();
             canvas.renderAll();
             window.pendingManualConnectionDevice = null;
@@ -901,7 +895,7 @@ document.addEventListener('DOMContentLoaded', function() {
               window.devicePendingPreviewLine = null;
             }
             if (device.connectionNodes.length === 2) {
-            updateDeviceRotation(device);
+              updateDeviceRotation(device);
             }
           }
         }
@@ -952,319 +946,349 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
       }
-      });
-      node.on('mouseover', function(e) {
-        if (window.selectedDeviceType === "Line" && window.lineStartNode && window.lineStartNode !== node) {
-          let startCenter = window.lineStartNode.getCenterPoint();
-          let endCenter = node.getCenterPoint();
-          if (window.manualLinePreview) {
-            canvas.remove(window.manualLinePreview);
-            window.manualLinePreview = null;
-          }
-          window.manualLinePreview = new fabric.Line(
-            [startCenter.x, startCenter.y, endCenter.x, endCenter.y],
-            { stroke: 'blue', strokeWidth: 4, selectable: false, evented: false, opacity: 0.5 }
-          );
-          canvas.add(window.manualLinePreview);
-          updateZOrder();
-          canvas.renderAll();
-        }
-      });
-      node.on('mouseout', function(e) {
+    });
+    node.on('mouseover', function(e) {
+      if (window.selectedDeviceType === "Line" && window.lineStartNode && window.lineStartNode !== node) {
+        let startCenter = window.lineStartNode.getCenterPoint();
+        let endCenter = node.getCenterPoint();
         if (window.manualLinePreview) {
           canvas.remove(window.manualLinePreview);
           window.manualLinePreview = null;
-          canvas.renderAll();
         }
-      });
-    }
-
-    // addDevice: เพิ่มอุปกรณ์ลงใน canvas
-    window.addDevice = function(type, left, top) {
-      const snapped = snapPointToGrid(left, top);
-      left = snapped.x;
-      top = snapped.y;
-
-      if (type === 'Node') {
-        const node = window.addNode(left, top, { fill: 'Black', radius: 4 });
-        node.bringToFront();
-        return;
+        window.manualLinePreview = new fabric.Line(
+          [startCenter.x, startCenter.y, endCenter.x, endCenter.y],
+          { stroke: 'blue', strokeWidth: 4, selectable: false, evented: false, opacity: 0.5 }
+        );
+        canvas.add(window.manualLinePreview);
+        updateZOrder();
+        canvas.renderAll();
       }
-      if (window.allNodes.length < 1) {
-        alert("กรุณาสร้าง Node อย่างน้อย 1 จุดก่อนวางอุปกรณ์");
-        return;
-      }
-      if (type === 'Line') {
-        window.selectedDeviceType = "Line";
-        window.lineStartNode = null;
-        updatePreview({ x: left, y: top });
-        return;
-      }
-      if (type === 'Recloser') {
-        fabric.loadSVGFromString(inlineRecloserSVG, function(objects, options) {
-          const device = new fabric.Group(objects, options);
-          device.scaleToWidth(40);
-          device.set({
-            left: left,
-            top: top,
-            originX: 'center',
-            originY: 'center',
-            hasControls: true,
-            selectable: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            hasBorders: false,
-            deviceType: type
-          });
-          device.setControlsVisibility({ mtr: false });
-          device.connectionNodes = [];
-          device.connectionLines = [];
-          canvas.add(device);
-          canvas.setActiveObject(device);
-          device.on('selected', function() {
-            if (device.connectionNodes.length < 2) {
-              window.pendingManualConnectionDevice = device;
-              showManualPreviewLine(device);
-            }
-          });
-          device.setCoords();
-          canvas.renderAll();
-          if (!device.manualOnly) { checkForNewConnections(device); }
-          updateConnectionLines(device, device.connectionNodes);
-          device.on('modified', function() {
-            checkForNewConnections(device);
-            updateConnectionLines(device, device.connectionNodes);
-          });
-          device.on('removed', function() {
-            removeDeviceConnections(device);
-          });
-          device.on('rotating', function(e) {
-            let angle = device.get('angle');
-            let snappedAngle = Math.round(angle / 90) * 90;
-            device.set('angle', snappedAngle);
-            device.setCoords();
-            canvas.renderAll();
-            console.log("Snapped rotation to:", snappedAngle);
-          });
-          window.connectedDevices.push(device);
-          updateZOrder();
-        });
-        return;
-      }
-      if (type === 'Fuse') {
-        fabric.loadSVGFromString(inlineFuseSVG, function(objects, options) {
-          if (!objects || objects.length === 0) return;
-          const device = new fabric.Group(objects, options);
-          device.scaleToWidth(40);
-          device.set({
-            left: left,
-            top: top,
-            originX: 'center',
-            originY: 'center',
-            hasControls: true,
-            selectable: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            hasBorders: false,
-            deviceType: type
-          });
-          device.setControlsVisibility({ mtr: false });
-          device.connectionNodes = [];
-          device.connectionLines = [];
-          canvas.add(device);
-          canvas.setActiveObject(device);
-          device.on('selected', function() {
-            if (device.connectionNodes.length < 2) {
-              window.pendingManualConnectionDevice = device;
-              showManualPreviewLine(device);
-            }
-          });
-          device.setCoords();
-          canvas.renderAll();
-          if (!device.manualOnly) { checkForNewConnections(device); }
-          updateConnectionLines(device, device.connectionNodes);
-          device.on('modified', function() {
-            checkForNewConnections(device);
-            updateConnectionLines(device, device.connectionNodes);
-          });
-          device.on('removed', function() {
-            removeDeviceConnections(device);
-          });
-          device.on('rotating', function(e) {
-            let angle = device.get('angle');
-            let snappedAngle = Math.round(angle / 90) * 90;
-            device.set('angle', snappedAngle);
-            device.setCoords();
-            canvas.renderAll();
-            console.log("Snapped rotation to:", snappedAngle);
-          });
-          window.connectedDevices.push(device);
-          updateZOrder();
-        });
-        return;
-      }
-      // สำหรับ ExternalGrid เมื่อ type เป็น ExternalGrid
-      if (type === 'ExternalGrid') {
-        fabric.loadSVGFromString(inlineExternalGridSVG, function(objects, options) {
-          if (!objects || objects.length === 0) return;
-          const device = new fabric.Group(objects, options);
-          device.scaleToWidth(40);
-          device.set({
-            left: left,
-            top: top,
-            originX: 'center',
-            originY: 'center',
-            hasControls: true,
-            selectable: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            hasBorders: false,
-            deviceType: type
-          });
-          device.setControlsVisibility({ mtr: false });
-          device.connectionNodes = [];
-          device.connectionLines = [];
-          canvas.add(device);
-          canvas.setActiveObject(device);
-          device.on('selected', function() {
-            if (device.connectionNodes.length < 2) {
-              window.pendingManualConnectionDevice = device;
-              showManualPreviewLine(device);
-            }
-          });
-          device.setCoords();
-          canvas.renderAll();
-          if (!device.manualOnly) { checkForNewConnections(device); }
-          updateConnectionLines(device, device.connectionNodes);
-          device.on('modified', function() {
-            checkForNewConnections(device);
-            updateConnectionLines(device, device.connectionNodes);
-          });
-          device.on('removed', function() {
-            removeDeviceConnections(device);
-          });
-          device.on('rotating', function(e) {
-            let angle = device.get('angle');
-            let snappedAngle = Math.round(angle / 90) * 90;
-            device.set('angle', snappedAngle);
-            device.setCoords();
-            canvas.renderAll();
-            console.log("Snapped rotation to:", snappedAngle);
-          });
-          window.connectedDevices.push(device);
-          updateZOrder();
-        });
-        return;
-      }
-    };
-
-    // canvas mouse:wheel event
-    canvas.on('mouse:wheel', function(opt) {
-      if (!opt.e.ctrlKey) return;
-      let delta = opt.e.deltaY;
-      let zoom = canvas.getZoom();
-      zoom *= Math.pow(0.999, delta);
-      zoom = Math.max(0.01, Math.min(zoom, 20));
-      canvas.setZoom(zoom);
-      canvas.renderAll();
-      updateGridBackground(canvas, gridSize);
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
     });
+    node.on('mouseout', function(e) {
+      if (window.manualLinePreview) {
+        canvas.remove(window.manualLinePreview);
+        window.manualLinePreview = null;
+        canvas.renderAll();
+      }
+    });
+  }
 
-    // canvas object:moving event
-    canvas.on('object:moving', function(e) {
-      const obj = e.target;
-      const center = obj.getCenterPoint();
-      const offset = gridSize / 2;
-      const newX = offset + Math.round((center.x - offset) / gridSize) * gridSize;
-      const newY = offset + Math.round((center.y - offset) / gridSize) * gridSize;
-      obj.setPositionByOrigin(new fabric.Point(newX, newY), 'center', 'center');
-      if (obj.connectionNodes && obj.connectionNodes.length > 0) {
-        const deviceCenter = obj.getCenterPoint();
-        const deviceWidth = obj.getScaledWidth();
-        obj.connectionNodes.forEach(function(node, index) {
-          const nodeCenter = node.getCenterPoint();
-          let originX = (nodeCenter.x < deviceCenter.x)
-            ? (deviceCenter.x - deviceWidth / 2 + 1)
-            : (deviceCenter.x + deviceWidth / 2 - 1);
-          if (obj.connectionLines[index]) {
-            obj.connectionLines[index].set({
-              x1: deviceCenter.x,
-              y1: deviceCenter.y ,
-              x2: nodeCenter.x ,
-              y2: nodeCenter.y ,
-            });
+  // addDevice: เพิ่มอุปกรณ์ลงใน canvas (โค้ดเดิม, เพิ่ม updateZOrder() หลังเพิ่ม device)
+  window.addDevice = function(type, left, top) {
+    const snapped = snapPointToGrid(left, top);
+    left = snapped.x;
+    top = snapped.y;
+    if (type === 'Node') {
+      const node = window.addNode(left, top, { fill: 'Black', radius: 4 });
+      node.bringToFront();
+      return;
+    }
+    if (window.allNodes.length < 1) {
+      alert("กรุณาสร้าง Node อย่างน้อย 1 จุดก่อนวางอุปกรณ์");
+      return;
+    }
+    if (type === 'Line') {
+      window.selectedDeviceType = "Line";
+      window.lineStartNode = null;
+      updatePreview({ x: left, y: top });
+      return;
+    }
+    if (type === 'Recloser') {
+      fabric.loadSVGFromString(inlineRecloserSVG, function(objects, options) {
+        const deviceSVG = new fabric.Group(objects, options);
+        deviceSVG.scaleToWidth(40);
+        const bgRect = new fabric.Rect({
+    width: deviceSVG.getScaledWidth(),
+    height: deviceSVG.getScaledHeight(),
+    fill: 'white'
+  });
+  
+  // รวมพื้นหลังและ SVG เข้าด้วยกันให้อยู่ในกลุ่มเดียว
+  const device = new fabric.Group([bgRect, deviceSVG], {
+    left: deviceSVG.left,
+    top: deviceSVG.top,
+    originX: 'center',
+    originY: 'center'
+  });
+        device.set({
+          left: left,
+          top: top,
+          originX: 'center',
+          originY: 'center',
+          hasControls: true,
+          selectable: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          hasBorders: false,
+          deviceType: type
+        });
+        device.setControlsVisibility({ mtr: false });
+        device.connectionNodes = [];
+        device.connectionLines = [];
+        canvas.add(device);
+        canvas.setActiveObject(device);
+        device.on('selected', function() {
+          if (device.connectionNodes.length < 2) {
+            window.pendingManualConnectionDevice = device;
+            showManualPreviewLine(device);
           }
         });
-      }
-      canvas.getObjects().forEach(function(obj) {
-        if (obj.type === 'line' && (obj.myStartNode || obj.myEndNode)) {
-          let start = obj.myStartNode.getCenterPoint();
-          let end = obj.myEndNode.getCenterPoint();
-          obj.set({ x1: start.x - 2, y1: start.y - 2, x2: end.x - 2, y2: end.y - 2 });
-        }
-      });
-      canvas.renderAll();
-    });
-
-    // Keydown event (Delete/Backspace)
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        const activeObject = canvas.getActiveObject();
-        if (activeObject) {
-          canvas.remove(activeObject);
-          canvas.discardActiveObject();
-          canvas.requestRenderAll();
-        }
-      }
-    });
-
-    // clearCanvas function
-    window.clearCanvas = function() {
-      canvas.getObjects().forEach(function(obj) {
-        if (obj.evented !== false) canvas.remove(obj);
-      });
-      canvas.requestRenderAll();
-      window.selectedNodes = [];
-      window.allNodes = [];
-      window.connectedDevices = [];
-      if (window.previewObject) window.previewObject = null;
-    };
-
-    // updateGridBackground function (repeated)
-    function updateGridBackground(canvas, gridSize) {
-      var zoom = canvas.getZoom();
-      var patternSize = gridSize;
-      var baseDotRadius = 3;
-      var dotRadius = baseDotRadius * zoom;
-      var patternCanvas = document.createElement('canvas');
-      patternCanvas.width = patternSize;
-      patternCanvas.height = patternSize;
-      var ctx = patternCanvas.getContext('2d');
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, patternSize, patternSize);
-      ctx.beginPath();
-      ctx.arc(patternSize / 2, patternSize / 2, dotRadius, 0, Math.PI * 2, false);
-      ctx.fillStyle = '#ccc';
-      ctx.fill();
-      var patternDataUrl = patternCanvas.toDataURL('image/png');
-      canvas.setBackgroundColor({ source: patternDataUrl, repeat: 'repeat' }, function() {
+        device.setCoords();
         canvas.renderAll();
+        updateZOrder();
+        if (!device.manualOnly) { checkForNewConnections(device); }
+        updateConnectionLines(device, device.connectionNodes);
+        device.on('modified', function() {
+          checkForNewConnections(device);
+          updateConnectionLines(device, device.connectionNodes);
+        });
+        device.on('removed', function() {
+          removeDeviceConnections(device);
+        });
+        device.on('rotating', function(e) {
+          let angle = device.get('angle');
+          let snappedAngle = Math.round(angle / 90) * 90;
+          device.set('angle', snappedAngle);
+          device.setCoords();
+          canvas.renderAll();
+          console.log("Snapped rotation to:", snappedAngle);
+        });
+        window.connectedDevices.push(device);
+        updateZOrder();
+      });
+      return;
+    }
+    if (type === 'Fuse') {
+      fabric.loadSVGFromString(inlineFuseSVG, function(objects, options) {
+        if (!objects || objects.length === 0) return;
+        const deviceSVG = new fabric.Group(objects, options);
+        deviceSVG.scaleToWidth(40);
+        const bgRect = new fabric.Rect({
+    width: deviceSVG.getScaledWidth(),
+    height: deviceSVG.getScaledHeight(),
+    fill: 'white'
+  });
+  
+  // รวมพื้นหลังและ SVG เข้าด้วยกันให้อยู่ในกลุ่มเดียว
+  const device = new fabric.Group([bgRect, deviceSVG], {
+    left: deviceSVG.left,
+    top: deviceSVG.top,
+    originX: 'center',
+    originY: 'center'
+  });
+        device.set({
+          left: left,
+          top: top,
+          originX: 'center',
+          originY: 'center',
+          hasControls: true,
+          selectable: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          hasBorders: false,
+          deviceType: type
+        });
+        device.setControlsVisibility({ mtr: false });
+        device.connectionNodes = [];
+        device.connectionLines = [];
+        canvas.add(device);
+        canvas.setActiveObject(device);
+        device.on('selected', function() {
+          if (device.connectionNodes.length < 2) {
+            window.pendingManualConnectionDevice = device;
+            showManualPreviewLine(device);
+          }
+        });
+        device.setCoords();
+        canvas.renderAll();
+        updateZOrder();
+        if (!device.manualOnly) { checkForNewConnections(device); }
+        updateConnectionLines(device, device.connectionNodes);
+        device.on('modified', function() {
+          checkForNewConnections(device);
+          updateConnectionLines(device, device.connectionNodes);
+        });
+        device.on('removed', function() {
+          removeDeviceConnections(device);
+        });
+        device.on('rotating', function(e) {
+          let angle = device.get('angle');
+          let snappedAngle = Math.round(angle / 90) * 90;
+          device.set('angle', snappedAngle);
+          device.setCoords();
+          canvas.renderAll();
+          console.log("Snapped rotation to:", snappedAngle);
+        });
+        window.connectedDevices.push(device);
+        updateZOrder();
+      });
+      return;
+    }
+    if (type === 'ExternalGrid') {
+      fabric.loadSVGFromString(inlineExternalGridSVG, function(objects, options) {
+        if (!objects || objects.length === 0) return;
+        const deviceSVG = new fabric.Group(objects, options);
+        deviceSVG.scaleToWidth(40);
+        const bgRect = new fabric.Rect({
+    width: deviceSVG.getScaledWidth(),
+    height: deviceSVG.getScaledHeight(),
+    fill: 'white'
+  });
+  
+  // รวมพื้นหลังและ SVG เข้าด้วยกันให้อยู่ในกลุ่มเดียว
+  const device = new fabric.Group([bgRect, deviceSVG], {
+    left: deviceSVG.left,
+    top: deviceSVG.top,
+    originX: 'center',
+    originY: 'center'
+  });
+        device.set({
+          left: left,
+          top: top,
+          originX: 'center',
+          originY: 'center',
+          hasControls: true,
+          selectable: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          hasBorders: false,
+          deviceType: type
+        });
+        device.setControlsVisibility({ mtr: false });
+        device.connectionNodes = [];
+        device.connectionLines = [];
+        canvas.add(device);
+        canvas.setActiveObject(device);
+        device.on('selected', function() {
+          if (device.connectionNodes.length < 2) {
+            window.pendingManualConnectionDevice = device;
+            showManualPreviewLine(device);
+          }
+        });
+        device.setCoords();
+        canvas.renderAll();
+        updateZOrder();
+        if (!device.manualOnly) { checkForNewConnections(device); }
+        updateConnectionLines(device, device.connectionNodes);
+        device.on('modified', function() {
+          checkForNewConnections(device);
+          updateConnectionLines(device, device.connectionNodes);
+        });
+        device.on('removed', function() {
+          removeDeviceConnections(device);
+        });
+        device.on('rotating', function(e) {
+          let angle = device.get('angle');
+          let snappedAngle = Math.round(angle / 90) * 90;
+          device.set('angle', snappedAngle);
+          device.setCoords();
+          canvas.renderAll();
+          console.log("Snapped rotation to:", snappedAngle);
+        });
+        window.connectedDevices.push(device);
+        updateZOrder();
+      });
+      return;
+    }
+  };
+
+  canvas.on('mouse:wheel', function(opt) {
+    if (!opt.e.ctrlKey) return;
+    let delta = opt.e.deltaY;
+    let zoom = canvas.getZoom();
+    zoom *= Math.pow(0.999, delta);
+    zoom = Math.max(0.01, Math.min(zoom, 20));
+    canvas.setZoom(zoom);
+    canvas.renderAll();
+    updateGridBackground(canvas, gridSize);
+    opt.e.preventDefault();
+    opt.e.stopPropagation();
+  });
+
+  canvas.on('object:moving', function(e) {
+    const obj = e.target;
+    const center = obj.getCenterPoint();
+    const offset = gridSize / 2;
+    const newX = offset + Math.round((center.x - offset) / gridSize) * gridSize;
+    const newY = offset + Math.round((center.y - offset) / gridSize) * gridSize;
+    obj.setPositionByOrigin(new fabric.Point(newX, newY), 'center', 'center');
+    if (obj.connectionNodes && obj.connectionNodes.length > 0) {
+      const deviceCenter = obj.getCenterPoint();
+      obj.connectionNodes.forEach(function(node, index) {
+        const nodeCenter = node.getCenterPoint();
+        if (obj.connectionLines[index]) {
+          obj.connectionLines[index].set({
+            x1: deviceCenter.x,
+            y1: deviceCenter.y,
+            x2: nodeCenter.x,
+            y2: nodeCenter.y,
+          });
+        }
       });
     }
+    canvas.getObjects().forEach(function(obj) {
+      if (obj.type === 'line' && (obj.myStartNode || obj.myEndNode)) {
+        let start = obj.myStartNode.getCenterPoint();
+        let end = obj.myEndNode.getCenterPoint();
+        obj.set({ x1: start.x - 2, y1: start.y - 2, x2: end.x - 2, y2: end.y - 2 });
+      }
+    });
+    canvas.renderAll();
+  });
 
-    // resizeCanvas function
-    function resizeCanvas() {
-      const contentWidth = document.getElementById('content').clientWidth;
-      canvas.setWidth(contentWidth);
-      canvas.setHeight(contentWidth * 9 / 16);
-      canvas.renderAll();
-      updateGridBackground(canvas, gridSize);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const activeObject = canvas.getActiveObject();
+      if (activeObject) {
+        canvas.remove(activeObject);
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+      }
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    canvas.calcOffset();
-  })();
+  });
+
+  window.clearCanvas = function() {
+    canvas.getObjects().forEach(function(obj) {
+      if (obj.evented !== false) canvas.remove(obj);
+    });
+    canvas.requestRenderAll();
+    window.selectedNodes = [];
+    window.allNodes = [];
+    window.connectedDevices = [];
+    if (window.previewObject) window.previewObject = null;
+  };
+
+  function updateGridBackground(canvas, gridSize) {
+    var zoom = canvas.getZoom();
+    var patternSize = gridSize;
+    var baseDotRadius = 3;
+    var dotRadius = baseDotRadius * zoom;
+    var patternCanvas = document.createElement('canvas');
+    patternCanvas.width = patternSize;
+    patternCanvas.height = patternSize;
+    var ctx = patternCanvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, patternSize, patternSize);
+    ctx.beginPath();
+    ctx.arc(patternSize / 2, patternSize / 2, dotRadius, 0, Math.PI * 2, false);
+    ctx.fillStyle = '#ccc';
+    ctx.fill();
+    var patternDataUrl = patternCanvas.toDataURL('image/png');
+    canvas.setBackgroundColor({ source: patternDataUrl, repeat: 'repeat' }, function() {
+      canvas.renderAll();
+    });
+  }
+
+  function resizeCanvas() {
+    const contentWidth = document.getElementById('content').clientWidth;
+    canvas.setWidth(contentWidth);
+    canvas.setHeight(contentWidth * 9 / 16);
+    canvas.renderAll();
+    updateGridBackground(canvas, gridSize);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  canvas.calcOffset();
+});
 </script>
 {% endblock %}
