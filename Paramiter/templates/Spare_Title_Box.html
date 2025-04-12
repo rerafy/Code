@@ -8,6 +8,12 @@
     flex: 0 0 25%;
     max-width: 25%;
   }
+   /* ลด padding และ margin ของ input ที่มี class form-control */
+   input.form-control {
+    padding: 0.5rem 0.3rem; /* ลด padding */
+    margin-bottom: 5px;    /* ลด margin ด้านล่าง */
+    font-size: 0.5rem;     /* ลดขนาดฟอนต์ถ้าต้องการ */
+  }
 </style>
 <div id="floatingPanel" style="
 position: absolute;
@@ -16,14 +22,15 @@ left: 50px;
 width: 600px;
 background: #fff;
 border: 1px solid #ccc;
-padding: 10px;
+font-size: 8px;
+padding: 8px;
 display: none;
 z-index: 9999;">
 
 <!-- Panel Header -->
 <div id="panelHeader" style="background: #ddd; cursor: move; padding: 5px;">
-  <span>Parameter Input</span>
-  <button onclick="hideFloatingPanel()">X</button>
+  <span style="font-size: 16px;">Parameter Input</span>
+  <button onclick="hideFloatingPanel()" style="float: right;">X</button>
 </div>
 
 <!-- ฟิลด์สำหรับตั้งชื่อชุดข้อมูล -->
@@ -38,14 +45,14 @@ z-index: 9999;">
   <select id="savedParameterSets" class="form-control"></select>
 </div>
 
-<!-- ส่วนสำหรับ External Grid Parameters -->
 <div id="externalGridFields" style="display:none;">
+<div><h2 style="font-size: 16px;">Short-Circuit curernt & Impedance ratio</h2></div>
+<!-- ส่วนสำหรับ External Grid Parameters -->
   <div class="row">
   <div class="form-group">
     <label for="shortCircuitCurrentMax">Short-Circuit Current Max. (kA):</label>
     <input type="number" id="shortCircuitCurrentMax" step="any" class="form-control" required>
   </div>
-</div>
 </div>
   <div class="row">
   <div class="col custom-col-25">  
@@ -73,11 +80,12 @@ z-index: 9999;">
   </div> 
 </div>
 </div>
+<div><h2<h2 style="font-size: 16px;"> Setting Relay </h2></div>
   <div class="row">
   <div class="col-md-4">
   <div class="form-group">
-    <label for="ctRatio">CT Ratio:</label>
-    <input type="number" id="ctRatio" step="any" class="form-control" required>
+    <label for="relay_ctRatio">CT Ratio:</label>
+    <input type="number" id="relay_ctRatio" step="any" class="form-control" required>
   </div>
 </div>
 </div>
@@ -112,6 +120,7 @@ z-index: 9999;">
     <input type="number" id="timeDial50" step="any" class="form-control" required>
   </div>
 </div>
+</div>
   <div class="row">
   <div class="col custom-col-20">
   <div class="form-group">
@@ -144,15 +153,133 @@ z-index: 9999;">
   </div>
 </div>
 </div>
+<div id="panelContentexternalGrid" style="padding: 5px;">
+  <button id="runFaultBtn" onclick="runShortCircuit()">บันทึกชุดข้อมูล</button>
+</div>
+</div>
 
-<!-- Panel Content -->
+<!-- Container Recloser -->
+<!-- Recloser Parameters -->
+<div id="recloserGridFields" style="display:none;">
+  <div><h2 style="font-size: 16px;">Setting Recloser</h2></div>
+  <!-- ส่วนสำหรับ Recloser Grid Parameters -->
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_ctRatio">CT Ratio:</label>
+        <input type="number" id="recloser_ctRatio" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Phase_threshold">Phase threshold :</label>
+        <input type="number" id="recloser_Phase_threshold" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Phase_TCC1">Phase TCC1 :</label>
+        <input type="number" id="recloser_Phase_TCC1" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Phase_TCC2">Phase TCC2 :</label>
+        <input type="number" id="recloser_Phase_TCC2" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Ground_threshold">Ground threshold :</label>
+        <input type="number" id="recloser_Ground_threshold" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Ground_TCC1">Ground TCC1 :</label>
+        <input type="number" id="recloser_Ground_TCC1" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="recloser_Ground_TCC2">Ground TCC2 :</label>
+        <input type="number" id="recloser_Ground_TCC2" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div id="panelContentRecloser" style="padding: 5px;">
+    <button id="runFaultBtnRecloser" onclick="runShortCircuit()">บันทึกชุดข้อมูล</button>
+  </div>
+</div>
+
+
+<div id="fuseGridFields" style="display:none;">
+  <div><h2 style="font-size: 16px;">fuse object</h2></div>
+  <!-- ส่วนสำหรับ recloser Grid Parameters -->
+    <div class="row">
+    <div class="col-md-4">
+    <div class="form-group">
+      <label for="Rated_current">Rated current :</label>
+      <input type="number" id="Rated_current" step="any" class="form-control" required>
+    </div>
+  </div>
+  <!-- Panel Content -->
 <div id="panelContent" style="padding: 5px;">
   <!-- ปุ่มสำหรับบันทึกชุดพารามิเตอร์ -->
   <button id="runFaultBtn" onclick="runShortCircuit()">บันทึกชุดข้อมูล</button>
 </div>
-
+</div>
 </div>
 
+ <!-- Line Parameters -->
+ <div id="lineGridFields" style="display:none;">
+  <div><h2 style="font-size: 16px;">Line Parameter</h2></div>
+  <!-- Line input fields -->
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="Length_Line">Length Line:</label>
+        <input type="number" id="Length_Line" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="R1">Pos.Seq.Resistance (R1):</label>
+        <input type="number" id="R1" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="R0">Zero.Seq.Resistance (R0):</label>
+        <input type="number" id="R0" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="X1">Pos.Seq.Reactance (X1):</label>
+        <input type="number" id="X1" step="any" class="form-control" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="X0">Zero.Seq.Reactance (X0):</label>
+        <input type="number" id="X0" step="any" class="form-control" required>
+      </div>
+    </div>
+  </div>
+  <div id="panelContentLine" style="padding: 5px;">
+    <button id="runFaultBtnLine" onclick="runShortCircuit()">บันทึกชุดข้อมูล</button>
+  </div>
+</div>
+</div>
 <script>
 // Global object สำหรับเก็บชุดพารามิเตอร์ External Grid
 window.savedExternalGridParameters = window.savedExternalGridParameters || [];
@@ -167,19 +294,40 @@ document.getElementById('floatingPanel').style.display = 'none';
 
 /* ฟังก์ชันเปิด Title Box (Floating Panel) */
 function openTitleBox(deviceType) {
-document.getElementById("panelHeader").querySelector("span").innerText = "Parameter Input: " + deviceType;
-// ถ้าเลือก ExternalGrid ให้แสดงฟิลด์ External Grid, ฟิลด์สำหรับตั้งชื่อชุดข้อมูล, และ dropdown ชุดข้อมูลที่บันทึกไว้
-if (deviceType === 'ExternalGrid') {
-  document.getElementById('externalGridFields').style.display = 'block';
-  document.getElementById('parameterSetNameContainer').style.display = 'block';
-  document.getElementById('savedParametersContainer').style.display = 'block';
-  updateSavedParametersDropdown();
-} else {
+  // เปลี่ยนข้อความใน header ให้แสดง deviceType ที่รับเข้ามา
+  document.getElementById("panelHeader").querySelector("span").innerText = "Parameter Input: " + deviceType;
+  
+  // ซ่อนทุก container ก่อน
   document.getElementById('externalGridFields').style.display = 'none';
+  document.getElementById('recloserGridFields').style.display = 'none';
+  document.getElementById('fuseGridFields').style.display = 'none';
+  document.getElementById('lineGridFields').style.display = 'none';
   document.getElementById('parameterSetNameContainer').style.display = 'none';
   document.getElementById('savedParametersContainer').style.display = 'none';
-}
-showFloatingPanel();
+  
+  // แล้วแสดง container ตาม deviceType ที่เลือก
+  if (deviceType === 'ExternalGrid') {
+    document.getElementById('externalGridFields').style.display = 'block';
+    document.getElementById('parameterSetNameContainer').style.display = 'block';
+    document.getElementById('savedParametersContainer').style.display = 'block';
+    updateSavedParametersDropdown();
+  } else if (deviceType === 'Recloser') {
+    document.getElementById('recloserGridFields').style.display = 'block';
+    document.getElementById('parameterSetNameContainer').style.display = 'block';
+    document.getElementById('savedParametersContainer').style.display = 'block';
+    updateSavedParametersDropdown();
+  } else if (deviceType === 'Fuse') {
+    document.getElementById('fuseGridFields').style.display = 'block';
+    document.getElementById('parameterSetNameContainer').style.display = 'block';
+    document.getElementById('savedParametersContainer').style.display = 'block';
+    updateSavedParametersDropdown();
+  } else if (deviceType === 'Line') {
+    document.getElementById('lineGridFields').style.display = 'block';
+    document.getElementById('parameterSetNameContainer').style.display = 'block';
+    document.getElementById('savedParametersContainer').style.display = 'block';
+    updateSavedParametersDropdown();
+  }
+  showFloatingPanel();
 }
 
 /* ฟังก์ชันอัปเดต dropdown ให้แสดงชุดข้อมูลที่บันทึกไว้ */
@@ -194,15 +342,24 @@ window.savedExternalGridParameters.forEach(function(item, index) {
 });
 // เมื่อมีการเปลี่ยนแปลงการเลือก ให้เติมข้อมูลในฟิลด์
 dropdown.onchange = function() {
-  var idx = dropdown.value;
-  if (window.savedExternalGridParameters[idx]) {
-    populateExternalGridFields(window.savedExternalGridParameters[idx].parameters);
+      var idx = dropdown.value;
+      if (window.savedExternalGridParameters[idx]) {
+        // For ExternalGrid use populateexternalGridFields;
+        // For Recloser use populaterecloserGridFields; You can add your own logic here if needed.
+        if(document.getElementById('externalGridFields').style.display==='block'){
+          populateexternalGridFields(window.savedExternalGridParameters[idx].parameters);
+        } else if(document.getElementById('recloserGridFields').style.display==='block'){
+          populaterecloserGridFields(window.savedExternalGridParameters[idx].parameters);
+        } else if(document.getElementById('fuseGridFields').style.display==='block'){
+          populatefuseGridFields(window.savedExternalGridParameters[idx].parameters)
+        } else if (document.getElementById('lineGridFields').style.display === 'block') {
+          populatelineGridFields(window.savedExternalGridParameters[idx].parameters);
+        }
+      }
+    }
   }
-}
-}
-
 /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ External Grid ลงในฟิลด์ */
-function populateExternalGridFields(params) {
+function populateexternalGridFields(params) {
 document.getElementById('shortCircuitCurrentMax').value = params.shortCircuitCurrentMax || '';
 document.getElementById('rxRatio').value = params.rxRatio || '';
 document.getElementById('z2z1Ratio').value = params.z2z1Ratio || '';
@@ -221,27 +378,73 @@ document.getElementById('in50N').value = params.i50N || '';
 document.getElementById('timeDial50N').value = params.timeDial50N || '';
 }
 
-/* ฟังก์ชันสำหรับบันทึกชุดพารามิเตอร์ External Grid */
-function runShortCircuit() {
-var parameters = {};
-if (document.getElementById('externalGridFields').style.display === 'block') {
-  parameters.shortCircuitCurrentMax = parseFloat(document.getElementById('shortCircuitCurrentMax').value);
-  parameters.rxRatio = parseFloat(document.getElementById('rxRatio').value);
-  parameters.z2z1Ratio = parseFloat(document.getElementById('z2z1Ratio').value);
-  parameters.x0x1Ratio = parseFloat(document.getElementById('x0x1Ratio').value);
-  parameters.r0x0Ratio = parseFloat(document.getElementById('r0x0Ratio').value);
-  parameters.ctRatio = parseFloat(document.getElementById('ctRatio').value);
-  parameters.i51 = parseFloat(document.getElementById('i51').value);
-  parameters.phaseCharacteristic = parseFloat(document.getElementById('phaseCharacteristic').value);
-  parameters.timeDial51 = parseFloat(document.getElementById('timeDial51').value);
-  parameters.i50 = parseFloat(document.getElementById('i50').value);
-  parameters.timeDial50 = parseFloat(document.getElementById('timeDial50').value);
-  parameters.i51N = parseFloat(document.getElementById('in51N').value);
-  parameters.groundCharacteristic = parseFloat(document.getElementById('groundCharacteristic').value);
-  parameters.timeDial51N = parseFloat(document.getElementById('timeDial51N').value);
-  parameters.i50N = parseFloat(document.getElementById('in50N').value);
-  parameters.timeDial50N = parseFloat(document.getElementById('timeDial50N').value);
-}
+  /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Recloser ลงในฟิลด์ */
+function populaterecloserGridFields(params) {
+    document.getElementById('recloser_ctRatio').value = params.ctRatio || '';
+    document.getElementById('recloser_Phase_threshold').value = params.Phase_threshold || '';
+    document.getElementById('recloser_Phase_TCC1').value = params.Phase_TCC1 || '';
+    document.getElementById('recloser_Phase_TCC2').value = params.Phase_TCC2 || '';
+    document.getElementById('recloser_Ground_threshold').value = params.Ground_threshold || '';
+    document.getElementById('recloser_Ground_TCC1').value = params.Ground_TCC1 || '';
+    document.getElementById('recloser_Ground_TCC2').value = params.Ground_TCC2 || '';
+  }
+
+  /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Recloser ลงในฟิลด์ */
+  function populatefuseGridFields(params) {
+    document.getElementById('Rated_current').value = params.Rated_current || '';
+   
+  }  
+
+   /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Line ลงในฟิลด์ */
+   function populatelineGridFields(params) {
+    document.getElementById('R1').value = params.R1 || '';
+    document.getElementById('R0').value = params.R0 || '';
+    document.getElementById('X1').value = params.X1 || '';
+    document.getElementById('X0').value = params.X0 || '';
+    document.getElementById('Length_Line').value = params.Length_Line || '';
+  }
+
+ /* ฟังก์ชันสำหรับบันทึกชุดพารามิเตอร์ (External Grid / Recloser) */
+ function runShortCircuit() {
+    var parameters = {};
+    if (document.getElementById('externalGridFields').style.display === 'block') {
+      parameters.shortCircuitCurrentMax = parseFloat(document.getElementById('shortCircuitCurrentMax').value);
+      parameters.rxRatio = parseFloat(document.getElementById('rxRatio').value);
+      parameters.z2z1Ratio = parseFloat(document.getElementById('z2z1Ratio').value);
+      parameters.x0x1Ratio = parseFloat(document.getElementById('x0x1Ratio').value);
+      parameters.r0x0Ratio = parseFloat(document.getElementById('r0x0Ratio').value);
+      parameters.ctRatio = parseFloat(document.getElementById('ctRatio').value);
+      parameters.i51 = parseFloat(document.getElementById('i51').value);
+      parameters.phaseCharacteristic = parseFloat(document.getElementById('phaseCharacteristic').value);
+      parameters.timeDial51 = parseFloat(document.getElementById('timeDial51').value);
+      parameters.i50 = parseFloat(document.getElementById('i50').value);
+      parameters.timeDial50 = parseFloat(document.getElementById('timeDial50').value);
+      parameters.i51N = parseFloat(document.getElementById('in51N').value);
+      parameters.groundCharacteristic = parseFloat(document.getElementById('groundCharacteristic').value);
+      parameters.timeDial51N = parseFloat(document.getElementById('timeDial51N').value);
+      parameters.i50N = parseFloat(document.getElementById('in50N').value);
+      parameters.timeDial50N = parseFloat(document.getElementById('timeDial50N').value);
+    }
+    if (document.getElementById('recloserGridFields').style.display === 'block') {
+      parameters.ctRatio = parseFloat(document.getElementById('recloser_ctRatio').value);
+      parameters.Phase_threshold = parseFloat(document.getElementById('recloser_Phase_threshold').value);
+      parameters.Phase_TCC1 = parseFloat(document.getElementById('recloser_Phase_TCC1').value);
+      parameters.Phase_TCC2 = parseFloat(document.getElementById('recloser_Phase_TCC2').value);
+      parameters.Ground_threshold = parseFloat(document.getElementById('recloser_Ground_threshold').value);
+      parameters.Ground_TCC1 = parseFloat(document.getElementById('recloser_Ground_TCC1').value);
+      parameters.Ground_TCC2 = parseFloat(document.getElementById('recloser_Ground_TCC2').value);
+    }
+    if (document.getElementById('fuseGridFields').style.display === 'block') {
+      parameters.Rated_current = parseFloat(document.getElementById('Rated_current').value);
+    }
+    if (document.getElementById('lineGridFields').style.display === 'block') {
+      parameters.R1 = parseFloat(document.getElementById('R1').value);
+      parameters.R0 = parseFloat(document.getElementById('R0').value);
+      parameters.X1 = parseFloat(document.getElementById('X1').value);
+      parameters.X0 = parseFloat(document.getElementById('X0').value);
+      parameters.Length_Line = parseFloat(document.getElementById('Length_Line').value);
+    }
+
 
 // อ่านชื่อชุดพารามิเตอร์ที่ผู้ใช้กรอก
 var parameterSetName = document.getElementById('parameterSetName').value || 'Unnamed Set';
