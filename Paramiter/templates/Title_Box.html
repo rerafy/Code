@@ -281,8 +281,13 @@ z-index: 9999;">
 </div>
 </div>
 <script>
-// Global object สำหรับเก็บชุดพารามิเตอร์ External Grid
-window.savedExternalGridParameters = window.savedExternalGridParameters || [];
+
+window.savedParameters = {
+  ExternalGrid: [],
+  Recloser: [],
+  Fuse: [],
+  Line: []
+};
 
 /* ฟังก์ชันแสดงและซ่อน Floating Panel */
 function showFloatingPanel() {
@@ -305,59 +310,54 @@ function openTitleBox(deviceType) {
   document.getElementById('parameterSetNameContainer').style.display = 'none';
   document.getElementById('savedParametersContainer').style.display = 'none';
   
-  // แล้วแสดง container ตาม deviceType ที่เลือก
+  // แสดง container ตาม deviceType ที่เลือก
   if (deviceType === 'ExternalGrid') {
     document.getElementById('externalGridFields').style.display = 'block';
-    document.getElementById('parameterSetNameContainer').style.display = 'block';
-    document.getElementById('savedParametersContainer').style.display = 'block';
-    updateSavedParametersDropdown();
   } else if (deviceType === 'Recloser') {
     document.getElementById('recloserGridFields').style.display = 'block';
-    document.getElementById('parameterSetNameContainer').style.display = 'block';
-    document.getElementById('savedParametersContainer').style.display = 'block';
-    updateSavedParametersDropdown();
   } else if (deviceType === 'Fuse') {
     document.getElementById('fuseGridFields').style.display = 'block';
-    document.getElementById('parameterSetNameContainer').style.display = 'block';
-    document.getElementById('savedParametersContainer').style.display = 'block';
-    updateSavedParametersDropdown();
   } else if (deviceType === 'Line') {
     document.getElementById('lineGridFields').style.display = 'block';
-    document.getElementById('parameterSetNameContainer').style.display = 'block';
-    document.getElementById('savedParametersContainer').style.display = 'block';
-    updateSavedParametersDropdown();
   }
+  
+  document.getElementById('parameterSetNameContainer').style.display = 'block';
+  document.getElementById('savedParametersContainer').style.display = 'block';
+  
+  updateSavedParametersDropdown();
   showFloatingPanel();
 }
 
-/* ฟังก์ชันอัปเดต dropdown ให้แสดงชุดข้อมูลที่บันทึกไว้ */
 function updateSavedParametersDropdown() {
-var dropdown = document.getElementById('savedParameterSets');
-dropdown.innerHTML = ''; // เคลียร์ option เดิม
-window.savedExternalGridParameters.forEach(function(item, index) {
-  var option = document.createElement('option');
-  option.value = index;
-  option.text = item.name;
-  dropdown.appendChild(option);
-});
-// เมื่อมีการเปลี่ยนแปลงการเลือก ให้เติมข้อมูลในฟิลด์
-dropdown.onchange = function() {
-      var idx = dropdown.value;
-      if (window.savedExternalGridParameters[idx]) {
-        // For ExternalGrid use populateexternalGridFields;
-        // For Recloser use populaterecloserGridFields; You can add your own logic here if needed.
-        if(document.getElementById('externalGridFields').style.display==='block'){
-          populateexternalGridFields(window.savedExternalGridParameters[idx].parameters);
-        } else if(document.getElementById('recloserGridFields').style.display==='block'){
-          populaterecloserGridFields(window.savedExternalGridParameters[idx].parameters);
-        } else if(document.getElementById('fuseGridFields').style.display==='block'){
-          populatefuseGridFields(window.savedExternalGridParameters[idx].parameters)
-        } else if (document.getElementById('lineGridFields').style.display === 'block') {
-          populatelineGridFields(window.savedExternalGridParameters[idx].parameters);
-        }
+  var dropdown = document.getElementById('savedParameterSets');
+  dropdown.innerHTML = ''; // เคลียร์ option เดิม
+  var currentDeviceType = document.getElementById("panelHeader").querySelector("span").innerText.replace("Parameter Input: ", "");
+  
+  window.savedParameters[currentDeviceType].forEach(function(item, index) {
+    var option = document.createElement('option');
+    option.value = index;
+    option.text = item.name;
+    dropdown.appendChild(option);
+  });
+  
+  // เมื่อมีการเปลี่ยนแปลงการเลือก ให้เติมข้อมูลในฟิลด์
+  dropdown.onchange = function() {
+    var idx = dropdown.value;
+    if (window.savedParameters[currentDeviceType][idx]) {
+      var params = window.savedParameters[currentDeviceType][idx].parameters;
+      // ตรวจสอบและเรียกใช้ฟังก์ชันเติมข้อมูลสำหรับแต่ละประเภท
+      if (currentDeviceType === 'ExternalGrid') {
+        populateexternalGridFields(params);
+      } else if (currentDeviceType === 'Recloser') {
+        populaterecloserGridFields(params);
+      } else if (currentDeviceType === 'Fuse') {
+        populatefuseGridFields(params);
+      } else if (currentDeviceType === 'Line') {
+        populatelineGridFields(params);
       }
     }
-  }
+  };
+}
 /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ External Grid ลงในฟิลด์ */
 function populateexternalGridFields(params) {
 document.getElementById('shortCircuitCurrentMax').value = params.shortCircuitCurrentMax || '';
@@ -376,6 +376,22 @@ document.getElementById('groundCharacteristic').value = params.groundCharacteris
 document.getElementById('timeDial51N').value = params.timeDial51N || '';
 document.getElementById('in50N').value = params.i50N || '';
 document.getElementById('timeDial50N').value = params.timeDial50N || '';
+document.getElementById('shortCircuitCurrentMax').removeAttribute('disabled');
+document.getElementById('rxRatio').removeAttribute('disabled');
+document.getElementById('z2z1Ratio').removeAttribute('disabled');
+document.getElementById('x0x1Ratio').removeAttribute('disabled');
+document.getElementById('r0x0Ratio').removeAttribute('disabled');
+document.getElementById('ctRatio').removeAttribute('disabled');
+document.getElementById('i51').removeAttribute('disabled');
+document.getElementById('phaseCharacteristic').removeAttribute('disabled');
+document.getElementById('timeDial51').removeAttribute('disabled');
+document.getElementById('i50').removeAttribute('disabled');
+document.getElementById('timeDial50').removeAttribute('disabled');
+document.getElementById('in51N').removeAttribute('disabled');
+document.getElementById('groundCharacteristic').removeAttribute('disabled');
+document.getElementById('timeDial51N').removeAttribute('disabled');
+document.getElementById('in50N').removeAttribute('disabled');
+document.getElementById('timeDial50N').removeAttribute('disabled');
 }
 
   /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Recloser ลงในฟิลด์ */
@@ -391,22 +407,39 @@ function populaterecloserGridFields(params) {
 
   /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Recloser ลงในฟิลด์ */
   function populatefuseGridFields(params) {
-    document.getElementById('Rated_current').value = params.Rated_current || '';
-   
-  }  
+  var fuseField = document.getElementById('Rated_current');
+  fuseField.value = params.Rated_current || '';
+  // ตั้งค่าให้ไม่สามารถแก้ไขได้
+  fuseField.setAttribute('disabled', 'disabled');
+}
 
-   /* ฟังก์ชันเติมข้อมูลพารามิเตอร์ Line ลงในฟิลด์ */
-   function populatelineGridFields(params) {
-    document.getElementById('R1').value = params.R1 || '';
-    document.getElementById('R0').value = params.R0 || '';
-    document.getElementById('X1').value = params.X1 || '';
-    document.getElementById('X0').value = params.X0 || '';
-    document.getElementById('Length_Line').value = params.Length_Line || '';
-  }
+function populatelineGridFields(params) {
+  var r1Field = document.getElementById('R1');
+  var r0Field = document.getElementById('R0');
+  var x1Field = document.getElementById('X1');
+  var x0Field = document.getElementById('X0');
+  var lengthLineField = document.getElementById('Length_Line');
+
+  r1Field.value = params.R1 || '';
+  r0Field.value = params.R0 || '';
+  x1Field.value = params.X1 || '';
+  x0Field.value = params.X0 || '';
+  lengthLineField.value = params.Length_Line || '';
+
+  // ปิดการแก้ไขสำหรับ fields ที่ไม่ใช่ Length_Line
+  r1Field.setAttribute('disabled', 'disabled');
+  r0Field.setAttribute('disabled', 'disabled');
+  x1Field.setAttribute('disabled', 'disabled');
+  x0Field.setAttribute('disabled', 'disabled');
+
+  // สำหรับ Length_Line ให้แน่ใจว่าเปิดให้แก้ไขได้
+  lengthLineField.removeAttribute('disabled');
+}
 
  /* ฟังก์ชันสำหรับบันทึกชุดพารามิเตอร์ (External Grid / Recloser) */
  function runShortCircuit() {
     var parameters = {};
+    var currentDeviceType = document.getElementById("panelHeader").querySelector("span").innerText.replace("Parameter Input: ", "");
     if (document.getElementById('externalGridFields').style.display === 'block') {
       parameters.shortCircuitCurrentMax = parseFloat(document.getElementById('shortCircuitCurrentMax').value);
       parameters.rxRatio = parseFloat(document.getElementById('rxRatio').value);
@@ -449,11 +482,14 @@ function populaterecloserGridFields(params) {
 // อ่านชื่อชุดพารามิเตอร์ที่ผู้ใช้กรอก
 var parameterSetName = document.getElementById('parameterSetName').value || 'Unnamed Set';
 
-// บันทึกชุดข้อมูลใน global object
-window.savedExternalGridParameters.push({
-  name: parameterSetName,
-  parameters: parameters
-});
+// บันทึกข้อมูลลงใน object ตามประเภท
+  window.savedParameters[currentDeviceType].push({
+    name: parameterSetName,
+    parameters: parameters
+  });
+
+// เรียกใช้ฟังก์ชันเพื่อบันทึกข้อมูลลง localStorage
+saveParametersToLocalStorage();
 
 alert('ชุดข้อมูลถูกบันทึกแล้ว: ' + JSON.stringify(parameters));
 updateSavedParametersDropdown();
@@ -484,7 +520,26 @@ document.addEventListener("mousemove", function(e) {
 document.addEventListener("mouseup", function(e) {
   isDragging = false;
 });
-})();
+});
+
+// ฟังก์ชันบันทึกข้อมูลไปยัง localStorage
+function saveParametersToLocalStorage() {
+  localStorage.setItem("savedParameters", JSON.stringify(window.savedParameters));
+}
+
+// ฟังก์ชันโหลดข้อมูลจาก localStorage
+function loadParametersFromLocalStorage() {
+  var stored = localStorage.getItem("savedParameters");
+  if (stored) {
+    window.savedParameters = JSON.parse(stored);
+  }
+}
+
+// เรียกใช้ loadParameters เมื่อโหลดหน้าเว็บ
+window.onload = function() {
+  loadParametersFromLocalStorage();
+}();
+
 </script>
 
 {% endblock %}

@@ -3,8 +3,33 @@ from django.http import HttpResponse
 from .models import Equipment
 from django.templatetags.static import static
 from .fault_analysis import FaultAnalysis, analyze_nodes_faults
+import requests
+from msal import ConfidentialClientApplication
+from django.conf import settings
+from django.http import JsonResponse
 
-# Create your views here.
+def get_onedrive_files(request):
+    app = ConfidentialClientApplication(
+        settings.MS_CLIENT_ID,
+        authority=f"https://login.microsoftonline.com/{settings.MS_TENANT_ID}",
+        client_credential=settings.MS_CLIENT_SECRET
+    )
+    token_res = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    if "access_token" not in token_res:
+        return JsonResponse({"error": "cannot acquire token", "details": token_res}, status=400)
+
+    headers = {"Authorization": f"Bearer {token_res['access_token']}"}
+
+    # ถ้าใช้ app‑only ต้องเรียก /users/{email}/drive
+    user_email = "youremail@domain.com"
+    url = f"https://graph.microsoft.com/v1.0/users/{user_email}/drive/root/children"
+    res = requests.get(url, headers=headers)
+
+    if res.status_code != 200:
+        return JsonResponse({"error": res.text}, status=res.status_code)
+
+    return JsonResponse(res.json())
+
 
 def index(request):
     return render(request,"index.html")

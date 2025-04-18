@@ -13,9 +13,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url  # ต้องติดตั้งแพ็กเกจ dj-database-url ผ่าน pip install dj-database-url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# โหลดไฟล์ .env
+load_dotenv(dotenv_path=BASE_DIR / '.env')
+
+# อ่านค่าจาก .env
+MS_CLIENT_ID     = os.getenv("MS_CLIENT_ID")
+MS_CLIENT_SECRET = os.getenv("MS_CLIENT_SECRET")
+MS_TENANT_ID     = os.getenv("MS_TENANT_ID")
 
 # ใช้ environment variable สำหรับค่า SECRET_KEY เพื่อความปลอดภัย
 SECRET_KEY = os.environ.get(
